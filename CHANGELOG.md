@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.2.0] - 2026-11-13
+## [6.0.0] - 2026-11-17
+
+A major version: the embedded payment form (Stripe Elements) is reworked, and
+the hooks, templates, setting and constants of the previous one are removed.
+Stripe Checkout, the default mode, is not affected. See *Migration* below.
 
 ### Added
 
@@ -30,9 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Requires Thelia 3.3.0 or later.
-- **Stripe Elements is now paid after the order is placed**, on a page of the
-  shop's checkout (`/module/StripePayment/payment`), with Stripe's Payment
-  Element. The PaymentIntent is created by `pay()` for what the order leaves to
+- **BREAKING**: Stripe Elements is now paid after the order is placed, on a
+  page of the shop's checkout (`/module/StripePayment/payment`), with Stripe's
+  Payment Element. The PaymentIntent is created by `pay()` for what the order leaves to
   pay and written on the order; it used to be created from the cart, on every
   cart event, and confirmed in the browser before the order existed, through
   hooks and a form that Twig themes such as Flexy do not have.
@@ -52,12 +56,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- The *one click payment* setting: the Payment Element shows Apple Pay and
-  Google Pay by itself.
-- The Smarty-era front-office hooks (`order-invoice.payment-extra`,
-  `order-invoice.after-javascript-include`, `main.after-javascript-include`,
-  `main.head-bottom`), `EventListeners\CartEventListener` and the
-  `PAYMENT_INTENT_*_SESSION_KEY` constants.
+- **BREAKING**: the *one click payment* setting and its
+  `StripePayment::ONE_CLICK_PAYMENT` constant: the Payment Element shows Apple
+  Pay and Google Pay by itself.
+- **BREAKING**: the Smarty-era front-office hooks
+  (`order-invoice.payment-extra`, `order-invoice.after-javascript-include`,
+  `main.after-javascript-include`, `main.head-bottom`) are no longer
+  subscribed.
+- **BREAKING**: the templates of the card fields,
+  `StripePayment/stripe-elements.html.twig` and
+  `StripePayment/stripe-elements-script.html.twig`.
+- **BREAKING**: `EventListeners\CartEventListener` and the
+  `StripePayment::PAYMENT_INTENT_*_SESSION_KEY` constants.
+
+### Migration
+
+A shop that uses Stripe Checkout has nothing to do.
+
+A shop that uses Stripe Elements:
+
+- An override of `stripe-elements.html.twig` or of
+  `stripe-elements-script.html.twig` is no longer rendered. The payment form is
+  `StripePayment/payment.html.twig`: override that template instead.
+- Nothing is rendered on the four hooks above any more. The stylesheet and
+  Stripe.js are served on the theme hooks `layout.head.bottom` and
+  `layout.body.bottom` (`Hook\Theme\StripePaymentThemeHook`).
+- Code that read the PaymentIntent from the session
+  (`PAYMENT_INTENT_*_SESSION_KEY`) reads it from the order: its id is the
+  transaction reference of the order, and `Service\OrderPaymentIntent` gives
+  the PaymentIntent itself.
+
+The webhook listens to the same three events as before.
 
 ## [5.1.0] - 2026-10-14
 

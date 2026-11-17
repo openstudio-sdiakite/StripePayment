@@ -67,7 +67,7 @@ the override empty).
 
 ### Paying the balance of an order
 
-Since 5.2 (Thelia 3.3.0 or later), Stripe can pay what is left of an order once
+Since 6.0 (Thelia 3.3.0 or later), Stripe can pay what is left of an order once
 an instant payment means of the shop, such as a credit note or a gift card, has
 paid a part of it. The Stripe Checkout session is created for that balance.
 
